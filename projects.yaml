@@ -1,0 +1,84 @@
+# Master project registry — source of truth for VPS apps under namuHlaeR
+version: 1
+github_account: namuHlaeR
+vps_host: ubuntu-32gb-fsn1-1
+
+projects:
+  - id: lynkclaimactie
+    vps_path: /opt/docker/clients/lynkclaimactie
+    git_root: .
+    github_repo: namuHlaeR/lca
+    services: [portal, website]
+    containers: [lynkclaimactie-portal, lynkclaimactie-website]
+    domains: [portal.lynkclaimactie.nl, lynkclaimactie.nl]
+    dev_compose: docker-compose.dev.yml
+    dockerfile_family: standalone
+    ci: false
+    gha_deploy: false
+    priority: pilot
+
+  - id: rk
+    vps_path: /opt/docker/clients/rk
+    git_root: rk-crm
+    github_repo: namuHlaeR/RudysCRM
+    services: [rk]
+    containers: [rk-crm]
+    domains: [portal.rudyskombucha.com]
+    dev_compose: docker-compose.yml#dev
+    dockerfile_family: overedge-crm
+    ci: true
+    gha_deploy: false
+    priority: high
+
+  - id: overedge
+    vps_path: /opt/docker/clients/overedge
+    git_root: .
+    github_repo: namuHlaeR/6for6
+    services: [overedge]
+    containers: [overedge-crm]
+    domains: [overedge.app]
+    dev_compose: docker-compose.mongodb-local.yml#dev
+    dockerfile_family: overedge-crm
+    ci: false
+    gha_deploy: false
+    priority: high
+
+  - id: velora
+    vps_path: /opt/docker/clients/velora
+    git_root: .
+    github_repo: namuHlaeR/velora-crm
+    services: [velora]
+    containers: [velora-crm]
+    domains: [velora.overedge.app]
+    dev_compose: docker-compose.yml#dev
+    dockerfile_family: overedge-crm
+    ci: false
+    gha_deploy: false
+    needs_github_repo: true
+    priority: high
+
+  - id: temir
+    vps_path: /opt/docker/clients/temir
+    git_root: .
+    github_repo: namuHlaeR/Temir-CRM
+    services: [temir]
+    containers: [temir-crm]
+    domains: [temir.overedge.app]
+    dev_compose: docker-compose.dev.yml
+    dockerfile_family: zonpa-crm
+    ci: false
+    gha_deploy: false
+    priority: high
+
+  - id: voluto
+    vps_path: /opt/docker/clients/voluto
+    git_root: .
+    github_repo: namuHlaeR/Voluto_v2
+    services: [voluto]
+    containers: [voluto-app, voluto-dev]
+    domains: [dev.overedge.app]
+    dev_compose: docker-compose.dev.yml
+    dockerfile_family: standalone
+    ci: false
+    gha_deploy: false
+    priority: medium
