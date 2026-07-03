@@ -1,0 +1,80 @@
+# Template: copy to .github/workflows/deploy.yml and replace {{PLACEHOLDERS}}
+name: Deploy
+
+on:
+  workflow_dispatch:
+    inputs:
+      ref:
+        description: Git ref to build
+        required: false
+        default: main
+        type: string
+      skip_build:
+        description: Skip build (pull existing tag only)
+        required: false
+        default: false
+        type: boolean
+      tag:
+        description: Image tag when skip_build=true
+        required: false
+        type: string
+
+env:
+  REGISTRY: ghcr.io
+  IMAGE_OWNER: namuhlaer
+  IMAGE_NAME: {{IMAGE_NAME}}
+  VPS_COMPOSE_PATH: {{VPS_COMPOSE_PATH}}
+  COMPOSE_SERVICE: {{COMPOSE_SERVICE}}
+  CONTAINER_NAME: {{CONTAINER_NAME}}
+  HEALTH_PORT: "{{HEALTH_PORT}}"
+
+jobs:
+  build:
+    if: inputs.skip_build != true
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ inputs.ref }}
+      - uses: docker/setup-buildx-action@v3
+      - uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+      - uses: docker/build-push-action@v6
+        with:
+          context: {{BUILD_CONTEXT}}
+          file: {{DOCKERFILE}}
+          push: true
+          tags: |
+            ghcr.io/${{ env.IMAGE_OWNER }}/${{ env.IMAGE_NAME }}:${{ inputs.tag || github.sha }}
+            ghcr.io/${{ env.IMAGE_OWNER }}/${{ env.IMAGE_NAME }}:main
+          build-args: |
+{{BUILD_ARGS}}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+
+  deploy:
+    needs: [build]
+    if: always() && (inputs.skip_build == true || needs.build.result == 'success' || needs.build.result == 'skipped')
+    runs-on: ubuntu-latest
+    environment: VPS_SSH_HOST
+    steps:
+      - uses: appleboy/ssh-action@v1.2.0
+        with:
+          host: ${{ secrets.VPS_SSH_HOST }}
+          username: ${{ secrets.VPS_SSH_USER }}
+          key: ${{ secrets.VPS_SSH_PRIVATE_KEY }}
+          port: ${{ secrets.VPS_SSH_PORT || vars.VPS_SSH_PORT || 2222 }}
+          script: |
+            set -euo pipefail
+            export IMAGE_TAG="${{ inputs.tag || github.sha }}"
+            sudo -u deploy -H /opt/docker/scripts/gha-crm-deploy.sh \
+              "${{ env.VPS_COMPOSE_PATH }}" \
+              "${{ env.COMPOSE_SERVICE }}" \
+              "${{ env.CONTAINER_NAME }}" \
+              "${{ env.HEALTH_PORT }}"

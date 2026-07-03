@@ -13,9 +13,22 @@ projects:
     domains: [portal.lynkclaimactie.nl, lynkclaimactie.nl]
     dev_compose: docker-compose.dev.yml
     dockerfile_family: standalone
-    ci: false
-    gha_deploy: false
+    ci: true
+    gha_deploy: true
     priority: pilot
+
+  - id: zonpa
+    vps_path: /opt/docker/clients/zonpa/ZonpaCRM
+    git_root: ..
+    github_repo: namuHlaeR/ZonpaCRM
+    services: [zonpa]
+    containers: [zonpa-crm]
+    domains: [zonpa.overedge.app]
+    dev_compose: docker-compose.yml#dev
+    dockerfile_family: zonpa-crm
+    ci: true
+    gha_deploy: true
+    priority: high
 
   - id: rk
     vps_path: /opt/docker/clients/rk
@@ -52,9 +65,9 @@ projects:
     domains: [velora.overedge.app]
     dev_compose: docker-compose.yml#dev
     dockerfile_family: overedge-crm
-    ci: false
-    gha_deploy: false
-    needs_github_repo: true
+    ci: true
+    gha_deploy: true
+    needs_github_repo: false
     priority: high
 
   - id: temir
@@ -66,8 +79,21 @@ projects:
     domains: [temir.overedge.app]
     dev_compose: docker-compose.dev.yml
     dockerfile_family: zonpa-crm
-    ci: false
-    gha_deploy: false
+    ci: true
+    gha_deploy: true
+    priority: high
+
+  - id: demo-overedge
+    vps_path: /opt/docker/clients/demo-overedge
+    git_root: .
+    github_repo: namuHlaeR/demo-overedge-crm
+    services: [demo-overedge]
+    containers: [demo-overedge-crm]
+    domains: [demo.overedge.app]
+    dev_compose: docker-compose.yml#dev
+    dockerfile_family: overedge-crm
+    ci: true
+    gha_deploy: true
     priority: high
 
   - id: voluto
